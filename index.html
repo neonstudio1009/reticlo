@@ -3,22 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>AimTrainer 射擊訓練</title>
+<title>RETICLO 射擊訓練</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:#000;color:#ddd;font-family:"Microsoft JhengHei",system-ui,sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none}
-#menu{position:fixed;inset:0;overflow:auto;padding:16px 16px 40px;display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-content:flex-start}
-.card{background:#0c0c0c;border:1px solid #222;border-radius:14px;padding:16px;width:340px;max-width:100%}
-.card h3{margin:0 0 10px;font-size:16px;border-bottom:1px solid #222;padding-bottom:6px}
-.row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:9px 0;font-size:14px}
-.row input[type=range]{flex:1;max-width:170px}
-.row .v{width:44px;text-align:right}
+#menu{position:fixed;inset:0;overflow:auto}
+.wrap{max-width:1200px;margin:0 auto;padding:18px 18px 60px}
+header.top{text-align:center;position:relative;margin-bottom:22px;padding:6px 50px}
+header.top h1{margin:0;font-size:42px;letter-spacing:.4em;padding-left:.4em;color:#fff;text-shadow:0 0 18px #fff5;font-weight:800}
+header.top p{margin:4px 0 0;color:#777;font-size:13px;letter-spacing:.2em}
+#gear{position:absolute;top:6px;right:0;width:40px;height:40px;background:none;border:0;color:#ccc;font-size:30px;cursor:pointer;line-height:1}
+.grid{display:grid;grid-template-columns:1fr 1.05fr 1fr;gap:16px;align-items:start}
+@media(max-width:960px){.grid{grid-template-columns:1fr;max-width:480px;margin:0 auto}header.top h1{font-size:32px}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:#0c0c0c;border:1px solid #222;border-radius:14px;padding:16px;width:100%}
+.card h3{margin:0 0 10px;font-size:16px;border-bottom:1px solid #222;padding-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;font-size:14px}
+.row input[type=range]{flex:1;min-width:0;max-width:190px}
+.row .v{width:50px;text-align:right}
 select,button.sm{background:#111;color:#ddd;border:1px solid #333;border-radius:8px;padding:7px 10px;font-size:14px;cursor:pointer}
-button.big{background:#fff;color:#000;border:0;border-radius:30px;padding:14px 50px;font-size:18px;font-weight:bold;box-shadow:0 0 20px #fff4;width:100%;margin-top:6px;cursor:pointer}
-.conv{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px}
-.conv div{background:#151515;padding:6px 8px;border-radius:6px;display:flex;justify-content:space-between}
-#cvsPrev{width:100%;height:100px;background:#1a1a1a;border-radius:8px;display:block}
+button.big{background:#fff;color:#000;border:0;border-radius:30px;padding:16px;font-size:19px;font-weight:bold;box-shadow:0 0 22px #fff4;width:100%;cursor:pointer}
+.conv{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;margin-top:10px}
+.conv div{background:#151515;padding:7px 8px;border-radius:6px;display:flex;justify-content:space-between;border:1px solid transparent}
+.conv div.sel{border-color:#888;background:#1d1d1d}
+#cvsPrev{width:100%;height:110px;background:#1a1a1a;border-radius:8px;display:block}
 #hud{position:fixed;top:6px;left:0;right:0;text-align:center;font-size:20px;pointer-events:none;display:none;z-index:5;text-shadow:0 0 4px #000}
 #hud span{margin:0 14px}
 #cross{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;display:none;z-index:4}
@@ -26,31 +35,35 @@ button.big{background:#fff;color:#000;border:0;border-radius:30px;padding:14px 5
 #game canvas{display:block}
 .tbtn{position:fixed;z-index:10;border-radius:50%;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.7);color:#fff;display:none;align-items:center;justify-content:center;font-size:16px;touch-action:none;transform:translate(-50%,-50%)}
 .tbtn.on{background:rgba(255,80,80,.5)}
-#editor{position:fixed;inset:0;background:#000d;z-index:60;display:none}
-#editor .bar{position:fixed;left:0;right:0;bottom:0;background:#111;padding:10px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;font-size:14px;z-index:70}
+#editor{position:fixed;inset:0;background:#000d;z-index:90;display:none}
+#editor .bar{position:fixed;left:0;right:0;bottom:0;background:#111;padding:10px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;font-size:14px;z-index:95}
 #editor .tip{position:fixed;top:10px;left:0;right:0;text-align:center;font-size:15px}
 #pauseBtn{position:fixed;top:8px;right:8px;z-index:12;display:none;background:#0008;color:#fff;border:1px solid #555;border-radius:8px;padding:8px 12px}
 #fps{position:fixed;top:6px;left:8px;font:12px monospace;color:#888;z-index:6}
 #ver{position:fixed;right:10px;bottom:6px;color:#666;font-weight:bold;z-index:1}
-#gear{position:fixed;top:12px;right:14px;z-index:20;width:38px;height:38px;background:none;border:0;color:#ccc;font-size:30px;cursor:pointer;line-height:1}
-#setModal{position:fixed;inset:0;background:#000c;z-index:80;display:none;align-items:center;justify-content:center}
+#setModal{position:fixed;inset:0;background:#000c;z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
 .hsItem{background:#151515;padding:12px;border-radius:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .hsItem b{font-size:20px;color:#fff}
 .hsItem small{display:block;color:#999;font-size:11px;text-align:right;line-height:1.5}
+#pause{position:fixed;inset:0;background:#000b;z-index:80;display:none;align-items:center;justify-content:center;flex-direction:column;gap:6px}
+#pause .t{font-size:34px;margin-bottom:10px}
+#pause .h{color:#e88;font-size:13px;min-height:20px;margin-bottom:6px}
+#pause button{width:260px}
 /* 結算 */
-#end{position:fixed;inset:0;background:#000;display:none;z-index:50;overflow:auto;padding:30px 16px;gap:16px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
-#end .col{width:340px;max-width:100%}
+#end{position:fixed;inset:0;background:#000;display:none;z-index:50;overflow:auto;padding:26px 16px;gap:16px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+#end .ecol{width:340px;max-width:100%}
 #end .mid{width:380px;text-align:center}
-#end h1{font-size:46px;font-weight:300;margin:10px 0}
+#end .brand{letter-spacing:.4em;color:#888;font-weight:bold;font-size:14px}
+#end h1{font-size:44px;font-weight:300;margin:8px 0}
 #newRec{color:#ffd400;font-weight:bold;font-size:22px;text-shadow:0 0 10px #ffd40088;min-height:30px}
-#bigScore{font-size:80px;font-weight:bold;color:#fff;text-shadow:0 0 18px #fff6;line-height:1.1}
+#bigScore{font-size:76px;font-weight:bold;color:#fff;text-shadow:0 0 18px #fff6;line-height:1.1}
 .stat{background:#0c0c0c;border:1px solid #222;border-radius:12px;padding:8px 20px;margin:16px 0}
 .stat div{display:flex;justify-content:space-between;padding:12px 0;font-size:18px;border-bottom:1px solid #1d1d1d}
 .stat div:last-child{border:0}
 .stat b{color:#fff}
 .btn2{display:block;width:100%;padding:14px;margin-top:10px;border-radius:6px;font-size:18px;font-weight:bold;cursor:pointer;border:1px solid #333}
 .btnW{background:#fff;color:#000}.btnD{background:#0d0d0d;color:#fff}
-#anal{max-height:calc(100vh - 60px);overflow:auto}
+#anal{max-height:calc(100vh - 52px);overflow:auto}
 .tabs{display:flex;background:#111;border:1px solid #222;border-radius:6px;overflow:hidden}
 .tabs span{padding:4px 10px;font-size:12px;cursor:pointer}
 .tabs span.act{background:#444;color:#fff;font-weight:bold}
@@ -63,87 +76,100 @@ canvas.radar{width:100%;max-width:260px;display:block;margin:0 auto}
 </head>
 <body>
 <div id="fps">60 FPS</div>
-<div id="ver">v2.0.0</div>
-<button id="gear" title="設定">⚙</button>
+<div id="ver">v2.1.0</div>
 
 <div id="menu">
-  <div class="card">
-    <h3>最高分數 <button class="sm" id="clr" style="float:right;font-size:12px;padding:3px 10px">清除</button></h3>
-    <div id="scores" style="font-size:14px"></div>
-  </div>
+ <div class="wrap">
+  <header class="top">
+    <h1>RETICLO</h1>
+    <p>瞄準訓練場</p>
+    <button id="gear" title="設定">⚙</button>
+  </header>
 
-  <div style="width:360px;max-width:100%">
-    <div class="card" style="width:100%;margin-bottom:14px">
-      <div class="row"><span>訓練模式</span>
-        <select id="mode">
-          <option value="normal">一般訓練</option>
-          <option value="precise">精準訓練</option>
-          <option value="track">平移跟槍</option>
-          <option value="flick">折返甩槍</option>
-          <option value="micro">微調訓練</option>
-        </select></div>
-      <div class="row"><span>短時模式(30 秒)</span><input type="checkbox" id="short"></div>
+  <div class="grid">
+    <!-- 左欄 -->
+    <div class="col">
+      <div class="card">
+        <h3>最高分數 <button class="sm" id="clr" style="font-size:12px;padding:3px 10px">清除</button></h3>
+        <div id="scores"></div>
+      </div>
+      <div class="card">
+        <h3>📱 手機操控 / 按鍵設置</h3>
+        <div class="row"><span>顯示觸控按鈕</span><input type="checkbox" id="touchOn"></div>
+        <div class="row"><span>第二顆射擊鈕</span><input type="checkbox" id="fire2On"></div>
+        <div class="row"><span>按鈕大小</span><input type="range" id="bSize" min="50" max="160" step="1"><span class="v" id="bSizeV"></span></div>
+        <div class="row"><span>按鈕透明度</span><input type="range" id="bOp" min="0.2" max="1" step="0.05"><span class="v" id="bOpV"></span></div>
+        <button class="sm" id="editBtn" style="width:100%;padding:12px">✋ 調整按鈕位置</button>
+        <p style="font-size:12px;color:#888;margin:8px 0 0">手指在畫面空白處滑動 = 移動視角;同時按射擊鈕 = 開槍。建議橫放手機。</p>
+      </div>
     </div>
-    <div class="card" style="width:100%">
-      <div class="row"><span>遊戲設定檔</span>
-        <select id="preset">
-          <option value="0">自訂 (Custom)</option>
-          <option value="103">Valorant</option>
-          <option value="106">Counter-Strike 2</option>
-          <option value="110">Apex Legends</option>
-          <option value="103">Overwatch</option>
-          <option value="90">Rainbow Six Siege</option>
-          <option value="90">PUBG</option>
-        </select></div>
-      <div class="row"><span>視野 (FOV)</span><input type="range" id="fov" min="60" max="140" step="1"><span class="v" id="fovV"></span></div>
-      <div class="row"><span>滑鼠靈敏度</span><input type="range" id="sens" min="0.1" max="5" step="0.01"><span class="v" id="sensV"></span></div>
-      <div class="row"><span>觸控靈敏度</span><input type="range" id="tsens" min="0.2" max="4" step="0.05"><span class="v" id="tsensV"></span></div>
-      <div class="conv" id="conv"></div>
+
+    <!-- 中欄 -->
+    <div class="col">
+      <div class="card">
+        <div class="row" style="margin-top:0"><span>訓練模式</span>
+          <select id="mode">
+            <option value="normal">一般訓練</option>
+            <option value="precise">精準訓練</option>
+            <option value="track">平移跟槍</option>
+            <option value="flick">折返甩槍</option>
+            <option value="micro">微調訓練</option>
+          </select></div>
+        <div class="row" style="margin-bottom:0"><span>短時模式(30 秒)</span><input type="checkbox" id="short"></div>
+      </div>
+      <div class="card">
+        <div class="row" style="margin-top:0"><span>遊戲設定檔</span>
+          <select id="preset"></select></div>
+        <div class="row"><span>視野 (FOV)</span><input type="range" id="fov" min="60" max="140" step="1"><span class="v" id="fovV"></span></div>
+        <div class="row"><span>滑鼠靈敏度</span><input type="range" id="sensR"><span class="v" id="sensV"></span></div>
+        <div class="row"><span>觸控靈敏度</span><input type="range" id="tsens" min="0.2" max="4" step="0.05"><span class="v" id="tsensV"></span></div>
+        <div class="conv" id="conv"></div>
+      </div>
+      <button class="big" id="start">開始訓練</button>
+    </div>
+
+    <!-- 右欄 -->
+    <div class="col">
+      <div class="card">
+        <h3>準心設定</h3>
+        <canvas id="cvsPrev" width="320" height="110"></canvas>
+        <div class="row"><span>顏色</span><input type="color" id="cCol"></div>
+        <div class="row"><span>透明度</span><input type="range" id="cOp" min="0.1" max="1" step="0.01"><span class="v" id="cOpV"></span></div>
+        <div class="row"><span>線條長度</span><input type="range" id="cLen" min="0" max="20" step="1"><span class="v" id="cLenV"></span></div>
+        <div class="row"><span>線條寬度</span><input type="range" id="cWid" min="0.5" max="8" step="0.05"><span class="v" id="cWidV"></span></div>
+        <div class="row"><span>中心間距</span><input type="range" id="cGap" min="0" max="20" step="1"><span class="v" id="cGapV"></span></div>
+        <div class="row"><span>中心點</span><input type="checkbox" id="cDot"></div>
+        <div class="row"><span>中心點大小</span><input type="range" id="cDotS" min="1" max="10" step="1"><span class="v" id="cDotSV"></span></div>
+        <div class="row"><span>外框線</span><input type="checkbox" id="cOut"></div>
+        <div class="row"><span>外框線顏色</span><input type="color" id="cOutC"></div>
+        <div class="row"><span>外框線寬度</span><input type="range" id="cOutW" min="0" max="4" step="0.5"><span class="v" id="cOutWV"></span></div>
+      </div>
     </div>
   </div>
-
-  <div class="card">
-    <h3>準心設定</h3>
-    <canvas id="cvsPrev" width="320" height="100"></canvas>
-    <div class="row"><span>顏色</span><input type="color" id="cCol"></div>
-    <div class="row"><span>透明度</span><input type="range" id="cOp" min="0.1" max="1" step="0.01"><span class="v" id="cOpV"></span></div>
-    <div class="row"><span>線條長度</span><input type="range" id="cLen" min="0" max="20" step="1"><span class="v" id="cLenV"></span></div>
-    <div class="row"><span>線條寬度</span><input type="range" id="cWid" min="0.5" max="8" step="0.05"><span class="v" id="cWidV"></span></div>
-    <div class="row"><span>中心間距</span><input type="range" id="cGap" min="0" max="20" step="1"><span class="v" id="cGapV"></span></div>
-    <div class="row"><span>中心點</span><input type="checkbox" id="cDot"></div>
-    <div class="row"><span>中心點大小</span><input type="range" id="cDotS" min="1" max="10" step="1"><span class="v" id="cDotSV"></span></div>
-    <div class="row"><span>外框線</span><input type="checkbox" id="cOut"></div>
-    <div class="row"><span>外框線顏色</span><input type="color" id="cOutC"></div>
-    <div class="row"><span>外框線寬度</span><input type="range" id="cOutW" min="0" max="4" step="0.5"><span class="v" id="cOutWV"></span></div>
-  </div>
-
-  <div class="card">
-    <h3>📱 手機操控 / 按鍵設置</h3>
-    <div class="row"><span>顯示觸控按鈕</span><input type="checkbox" id="touchOn"></div>
-    <div class="row"><span>第二顆射擊鈕</span><input type="checkbox" id="fire2On"></div>
-    <div class="row"><span>按鈕大小</span><input type="range" id="bSize" min="50" max="160" step="1"><span class="v" id="bSizeV"></span></div>
-    <div class="row"><span>按鈕透明度</span><input type="range" id="bOp" min="0.2" max="1" step="0.05"><span class="v" id="bOpV"></span></div>
-    <button class="sm" id="editBtn" style="width:100%;padding:12px">✋ 調整按鈕位置</button>
-    <p style="font-size:12px;color:#888;margin:8px 0 0">操作:手指在畫面空白處滑動 = 移動視角;同時按射擊鈕 = 開槍。建議橫放手機。</p>
-  </div>
-
-  <div style="width:100%;max-width:360px"><button class="big" id="start">開始訓練</button></div>
+ </div>
 </div>
 
 <div id="game"></div>
 <canvas id="cross"></canvas>
 <div id="hud"><span id="hScore"></span><span id="hTime"></span><span id="hAcc"></span></div>
-<button id="pauseBtn">結束</button>
+<button id="pauseBtn">暫停</button>
 <div class="tbtn" id="fire1">射擊</div>
 <div class="tbtn" id="fire2">射擊</div>
 
-<!-- 結算畫面 -->
+<div id="pause">
+  <div class="t">已暫停</div>
+  <div class="h" id="pauseHint"></div>
+  <button class="btn2 btnW" id="resume">繼續訓練</button>
+  <button class="btn2 btnD" id="quit">結束訓練</button>
+</div>
+
 <div id="end">
-  <div class="col card" style="align-self:flex-start">
+  <div class="ecol card" style="align-self:flex-start">
     <h3>最高分數</h3>
     <div id="scores2"></div>
   </div>
-  <div class="col mid">
+  <div class="ecol mid">
+    <div class="brand">RETICLO</div>
     <h1>訓練結束</h1>
     <div id="newRec"></div>
     <div style="margin-top:14px;color:#aaa">分數:</div>
@@ -156,7 +182,7 @@ canvas.radar{width:100%;max-width:260px;display:block;margin:0 auto}
     <button class="btn2 btnW" id="again">再來一把</button>
     <button class="btn2 btnD" id="toMenu">回到主畫面</button>
   </div>
-  <div class="col card" id="anal">
+  <div class="ecol card" id="anal">
     <div class="ah" style="margin-top:0"><span>擊殺時間走勢</span></div>
     <canvas id="trend" width="320" height="110" style="width:100%;height:110px;background:#0a0a0a;border:1px solid #1d1d1d;border-radius:8px"></canvas>
     <div class="ah"><span>方位盲區分析 (反應時間)</span>
@@ -172,10 +198,9 @@ canvas.radar{width:100%;max-width:260px;display:block;margin:0 auto}
   </div>
 </div>
 
-<!-- 設定視窗 -->
 <div id="setModal">
   <div class="card" style="width:340px">
-    <h3>設定 <button class="sm" id="setClose" style="float:right;padding:3px 10px">✕</button></h3>
+    <h3>設定 <button class="sm" id="setClose" style="padding:3px 10px">✕</button></h3>
     <div class="row"><span>音效</span><input type="checkbox" id="sndOn"></div>
     <div class="row"><span>音量</span><input type="range" id="vol" min="0" max="1" step="0.05"><span class="v" id="volV"></span></div>
     <div class="row"><span>顯示 FPS</span><input type="checkbox" id="showFps"></div>
@@ -197,13 +222,27 @@ canvas.radar{width:100%;max-width:260px;display:block;margin:0 auto}
 
 <script>
 const $=id=>document.getElementById(id);
-const DEF={mode:'normal',short:false,preset:'0',fov:103,sens:1,tsens:1,
+const DEF={mode:'normal',short:false,game:0,fov:103,sens:1,tsens:1,
  cCol:'#ffffff',cOp:0.93,cLen:4,cWid:1.65,cGap:2,cDot:true,cDotS:2,cOut:true,cOutC:'#000000',cOutW:1,
  touchOn:('ontouchstart' in window)||matchMedia('(pointer:coarse)').matches,fire2On:false,bSize:90,bOp:0.7,
  f1:{x:85,y:60},f2:{x:15,y:60},sndOn:true,vol:0.4,showFps:true};
 let S=Object.assign({},DEF,JSON.parse(localStorage.getItem('aimSettings')||'{}'));
 S.f1=Object.assign({},DEF.f1,S.f1);S.f2=Object.assign({},DEF.f2,S.f2);
+S.game=Number.isInteger(S.game)&&S.game>=0&&S.game<7?S.game:0;
 const save=()=>localStorage.setItem('aimSettings',JSON.stringify(S));
+
+// 遊戲設定檔:r = 該遊戲靈敏度 / Valorant 靈敏度
+const PRESETS=[
+ {n:'自訂 (Custom)',fov:0,r:1},
+ {n:'Valorant',fov:103,r:1},
+ {n:'Counter-Strike 2',fov:106,r:3.182,short:'CS2'},
+ {n:'Apex Legends',fov:110,r:3.182},
+ {n:'Overwatch',fov:103,r:10.606},
+ {n:'Rainbow Six Siege',fov:90,r:12.216,short:'Rainbow 6'},
+ {n:'PUBG',fov:90,r:57.308}
+];
+$('preset').innerHTML=PRESETS.map((p,i)=>`<option value="${i}">${p.n}</option>`).join('');
+$('preset').value=S.game;
 
 const bind=(id,key,fmt)=>{
   const el=$(id),vEl=$(id+'V');
@@ -214,17 +253,39 @@ const bind=(id,key,fmt)=>{
   el.addEventListener('input',upd);
   if(vEl)vEl.textContent=fmt?fmt(S[key]):S[key];
 };
-bind('mode','mode');bind('short','short');bind('fov','fov');bind('sens','sens',v=>(+v).toFixed(3));
+bind('mode','mode');bind('short','short');bind('fov','fov');
 bind('tsens','tsens',v=>(+v).toFixed(2));
 ['cCol','cOp','cLen','cWid','cGap','cDot','cDotS','cOut','cOutC','cOutW'].forEach(k=>bind(k,k));
 bind('touchOn','touchOn');bind('fire2On','fire2On');bind('bSize','bSize');bind('bOp','bOp');
 bind('sndOn','sndOn');bind('vol','vol');bind('showFps','showFps');
-$('preset').value=S.preset;
-$('preset').addEventListener('change',e=>{S.preset=e.target.value;const f=+e.target.value;
-  if(f){S.fov=f;$('fov').value=f;$('fovV').textContent=f;}save();afterChange();});
-const RATIO=[['Valorant',1],['CS2',3.182],['Apex Legends',3.182],['Overwatch',10.606],['Rainbow 6',12.216],['PUBG',57.308]];
+
+// 靈敏度:內部以 Valorant 為基準(S.sens),滑桿顯示目前所選遊戲的單位
+function setSensUI(){
+  const r=PRESETS[S.game].r,el=$('sensR');
+  el.min=(0.05*r).toFixed(3);el.max=(5*r).toFixed(3);el.step=(r>=5?0.01:0.001);
+  el.value=(S.sens*r).toFixed(3);
+  $('sensV').textContent=(S.sens*r).toFixed(r>=5?2:3);
+}
+$('sensR').addEventListener('input',e=>{
+  const r=PRESETS[S.game].r;
+  S.sens=parseFloat(e.target.value)/r;
+  $('sensV').textContent=(S.sens*r).toFixed(r>=5?2:3);
+  save();renderConv();
+});
+$('preset').addEventListener('change',e=>{
+  S.game=+e.target.value;
+  const f=PRESETS[S.game].fov;
+  if(f){S.fov=f;$('fov').value=f;$('fovV').textContent=f;}
+  setSensUI();save();afterChange();
+});
+function renderConv(){
+  $('conv').innerHTML=PRESETS.slice(1).map((p,i)=>{
+    const idx=i+1,v=S.sens*p.r;
+    return `<div class="${idx===S.game?'sel':''}"><b>${p.short||p.n}:</b><span>${v.toFixed(p.r>=5?2:3)}</span></div>`;
+  }).join('');
+}
 function afterChange(){
-  $('conv').innerHTML=RATIO.map(([n,r])=>`<div><b>${n}</b><span>${(S.sens*r).toFixed(3)}</span></div>`).join('');
+  renderConv();
   drawCross($('cvsPrev'),true);
   applyBtns();
   $('fps').style.display=S.showFps?'block':'none';
@@ -300,12 +361,15 @@ function beep(f,d){
 }
 
 // ---------- 3D ----------
-let renderer,scene,camera,targets=[],running=false;
+let renderer,scene,camera,targets=[],running=false,paused=false,pauseAt=0;
 let yaw=0,pitch=0,score=0,hits=0,shots=0,timeLeft=60,lastT=0,firing=new Set();
 let trackOn=0,trackTot=0,trackSample=0,flickStage=0,fpsC=0,fpsT=0;
 let lastKill=0,sec,ttks,missOver=0,missUnder=0,mv={x:0,y:0},gameDur=60,startTime=0;
 const ray=new THREE.Raycaster();
-function vFov(){const a=innerWidth/innerHeight;return 2*Math.atan(Math.tan(S.fov*Math.PI/360)/Math.max(a,1.2)*1.0)*180/Math.PI*(a<1.2?1:1);}
+function vFov(){
+  const a=innerWidth/innerHeight;
+  return Math.min(120,2*Math.atan(Math.tan(S.fov*Math.PI/360)/a)*180/Math.PI);
+}
 function initThree(){
   renderer=new THREE.WebGLRenderer({antialias:true});
   renderer.setPixelRatio(Math.min(devicePixelRatio,2));
@@ -315,6 +379,8 @@ function initThree(){
   camera=new THREE.PerspectiveCamera(vFov(),innerWidth/innerHeight,0.1,200);
   camera.rotation.order='YXZ';
   scene.add(new THREE.Mesh(new THREE.BoxGeometry(80,36,80),new THREE.MeshStandardMaterial({color:0x1c1c1c,side:THREE.BackSide,roughness:1})));
+  const grid=new THREE.GridHelper(80,40,0x2a2a2a,0x222222);
+  grid.rotation.x=Math.PI/2;grid.position.z=-39.8;scene.add(grid);
   const pm=new THREE.MeshStandardMaterial({color:0x151515,roughness:1});
   for(let i=0;i<14;i++){const h=8+Math.random()*20;
     const p=new THREE.Mesh(new THREE.BoxGeometry(3+Math.random()*3,h,3+Math.random()*3),pm);
@@ -326,11 +392,11 @@ function initThree(){
 addEventListener('resize',()=>{if(!renderer)return;renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.fov=vFov();camera.updateProjectionMatrix();});
 
 const rnd=(a,b)=>a+Math.random()*(b-a);
+const DIST=20;
 function dirFrom(yawD,pitchD,dist){
   const y=THREE.MathUtils.degToRad(yawD),p=THREE.MathUtils.degToRad(pitchD);
   return new THREE.Vector3(-Math.sin(y)*Math.cos(p)*dist,Math.sin(p)*dist,-Math.cos(y)*Math.cos(p)*dist);
 }
-// 目標相對準心的偏移(切線座標)與方位 0=上,順時針 8 向
 function offsetOf(t){
   camera.updateMatrixWorld(true);
   const v=t.position.clone().applyMatrix4(camera.matrixWorldInverse);
@@ -338,42 +404,46 @@ function offsetOf(t){
 }
 function sectorOf(t){
   const o=offsetOf(t);
-  let a=Math.atan2(o.x,o.y)*180/Math.PI;
+  const a=Math.atan2(o.x,o.y)*180/Math.PI;
   return ((Math.round(a/45)%8)+8)%8;
 }
-function addTarget(yawD,pitchD,dist,r,extra){
+function addTarget(yawD,pitchD,r,extra){
   const m=new THREE.Mesh(new THREE.SphereGeometry(r,32,24),new THREE.MeshStandardMaterial({color:0xffffff,emissive:0x777777}));
-  m.position.copy(dirFrom(yawD,pitchD,dist));
-  Object.assign(m.userData,{yaw:yawD,pitch:pitchD,dist,...extra});
+  m.position.copy(dirFrom(yawD,pitchD,DIST));
+  Object.assign(m.userData,{yaw:yawD,pitch:pitchD,dist:DIST,...extra});
   scene.add(m);targets.push(m);return m;
 }
 function removeTarget(t){scene.remove(t);t.geometry.dispose();t.material.dispose();targets=targets.filter(x=>x!==t);}
-function spawnRandom(r,yr,pr,dist){
-  for(let i=0;i<20;i++){
+// 目標集中在準心前方的一小塊區域(類似 Gridshot),彼此至少保持 gap 度
+function spawnRandom(r,yr,pr,gap){
+  for(let i=0;i<40;i++){
     const y=rnd(-yr,yr),p=rnd(-pr,pr);
-    if(targets.every(t=>Math.hypot(t.userData.yaw-y,t.userData.pitch-p)>(r*5+4)))return addTarget(y,p,dist||rnd(14,24),r);
+    if(targets.every(t=>Math.hypot(t.userData.yaw-y,t.userData.pitch-p)>gap))return addTarget(y,p,r);
   }
-  return addTarget(rnd(-yr,yr),rnd(-pr,pr),18,r);
+  return addTarget(rnd(-yr,yr),rnd(-pr,pr),r);
 }
+const CFG={
+  normal:{r:0.8,yr:14,pr:8,gap:6.5},
+  precise:{r:0.4,yr:14,pr:8,gap:5},
+  micro:{r:0.28,yr:5,pr:3,gap:3.2}
+};
 function setupMode(){
   targets.slice().forEach(removeTarget);flickStage=0;
   const m=S.mode;
-  if(m==='normal')for(let i=0;i<3;i++)spawnRandom(0.9,38,22);
-  if(m==='precise')for(let i=0;i<3;i++)spawnRandom(0.35,38,22);
-  if(m==='track')addTarget(0,0,20,1.1,{vy:22});
+  if(CFG[m]){const c=CFG[m];for(let i=0;i<3;i++)spawnRandom(c.r,c.yr,c.pr,c.gap);}
+  if(m==='track')addTarget(0,0,1.0,{vy:16});
   if(m==='flick')spawnFlick();
-  if(m==='micro')for(let i=0;i<3;i++)spawnRandom(0.28,9,6,18);
 }
 function spawnFlick(){
-  if(flickStage===0){const s=Math.random()<.5?-1:1;addTarget(s*rnd(22,40),rnd(-14,14),20,0.9);}
-  else addTarget(0,0,20,0.9);
+  if(flickStage===0){const s=Math.random()<.5?-1:1;addTarget(s*rnd(14,24),rnd(-6,6),0.8);}
+  else addTarget(0,0,0.8);
 }
 function hitSphere(){
   ray.setFromCamera({x:0,y:0},camera);
   const r=ray.intersectObjects(targets);return r.length?r[0].object:null;
 }
 function fireOnce(){
-  if(!running)return;
+  if(!running||paused)return;
   if(S.mode==='track'){beep(500,0.03);return;}
   shots++;
   const t=hitSphere();
@@ -382,15 +452,12 @@ function fireOnce(){
     hits++;
     const s=sectorOf(t);
     const ttk=now-Math.max(lastKill,startTime);lastKill=now;
-    const pts=Math.max(50,Math.round(500-0.43*ttk));
-    score+=pts;
+    score+=Math.max(50,Math.round(500-0.43*ttk));
     sec[s].hit++;sec[s].rtSum+=ttk;sec[s].n++;ttks.push(Math.round(ttk));
     beep(900,0.06);
     removeTarget(t);
     if(S.mode==='flick'){flickStage=1-flickStage;spawnFlick();}
-    else if(S.mode==='normal')spawnRandom(0.9,38,22);
-    else if(S.mode==='precise')spawnRandom(0.35,38,22);
-    else if(S.mode==='micro')spawnRandom(0.28,9,6,18);
+    else if(CFG[S.mode]){const c=CFG[S.mode];spawnRandom(c.r,c.yr,c.pr,c.gap);}
   }else{
     beep(200,0.04);
     let best=null,bd=1e9;
@@ -406,7 +473,7 @@ function fireOnce(){
 
 // ---------- 輸入 ----------
 const look=(dx,dy,k)=>{
-  if(!running)return;
+  if(!running||paused)return;
   const d=THREE.MathUtils.degToRad(0.07*k);
   yaw-=dx*d;pitch-=dy*d;
   pitch=Math.max(-1.5,Math.min(1.5,pitch));
@@ -414,12 +481,10 @@ const look=(dx,dy,k)=>{
   mv.x+=dx;mv.y+=-dy;
 };
 const gameEl=$('game');
-addEventListener('mousemove',e=>{if(renderer&&document.pointerLockElement===renderer.domElement)look(e.movementX,e.movementY,S.sens);});
-addEventListener('mousedown',e=>{if(e.button===0&&renderer&&document.pointerLockElement===renderer.domElement){fireOnce();firing.add('m');}});
+const locked=()=>renderer&&document.pointerLockElement===renderer.domElement;
+addEventListener('mousemove',e=>{if(locked())look(e.movementX,e.movementY,S.sens);});
+addEventListener('mousedown',e=>{if(e.button===0&&locked()){fireOnce();firing.add('m');}});
 addEventListener('mouseup',e=>{if(e.button===0)firing.delete('m');});
-document.addEventListener('pointerlockchange',()=>{
-  if(running&&!document.pointerLockElement&&!S.touchOn)endGame();
-});
 const lookPtr=new Map();
 gameEl.addEventListener('pointerdown',e=>{
   if(e.pointerType==='mouse')return;
@@ -439,11 +504,47 @@ gameEl.addEventListener('pointermove',e=>{
 });
 document.addEventListener('contextmenu',e=>e.preventDefault());
 
+// ---------- 暫停 / 繼續(Esc 只會暫停) ----------
+function pauseGame(){
+  if(!running||paused)return;
+  paused=true;pauseAt=performance.now();firing.clear();
+  $('pauseHint').textContent='';
+  $('pause').style.display='flex';
+  if(document.pointerLockElement)document.exitPointerLock();
+}
+function doResume(){
+  if(!running||!paused)return;
+  const d=performance.now()-pauseAt;
+  startTime+=d;lastKill+=d;lastT=performance.now();
+  paused=false;$('pause').style.display='none';
+}
+function resumeGame(){
+  if(S.touchOn){doResume();return;}
+  $('pauseHint').textContent='';
+  const p=renderer.domElement.requestPointerLock();
+  if(p&&p.catch)p.catch(()=>{$('pauseHint').textContent='瀏覽器剛釋放滑鼠,請稍等 1 秒再按一次';});
+}
+document.addEventListener('pointerlockchange',()=>{
+  if(!running||S.touchOn)return;
+  if(document.pointerLockElement){ if(paused)doResume(); }
+  else pauseGame();
+});
+document.addEventListener('pointerlockerror',()=>{
+  if(!running)return;
+  if(!paused)pauseGame();
+  $('pauseHint').textContent='無法鎖定滑鼠,請稍等 1 秒再按「繼續訓練」';
+});
+addEventListener('keydown',e=>{if(e.key==='Escape'&&running&&!paused)pauseGame();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseGame();});
+$('resume').onclick=resumeGame;
+$('quit').onclick=()=>{ if(paused){$('pause').style.display='none';paused=false;} endGame(); };
+$('pauseBtn').onclick=pauseGame;
+
 // ---------- 流程 ----------
 const emptySec=()=>Array.from({length:8},()=>({rtSum:0,n:0,hit:0,miss:0}));
 function startGame(){
   if(!renderer)initThree();
-  $('menu').style.display='none';$('end').style.display='none';$('gear').style.display='none';$('ver').style.display='none';
+  $('menu').style.display='none';$('end').style.display='none';$('ver').style.display='none';$('pause').style.display='none';
   $('game').style.display='block';$('hud').style.display='block';$('cross').style.display='block';
   $('pauseBtn').style.display='block';
   drawCross($('cross'),false);
@@ -451,10 +552,10 @@ function startGame(){
   yaw=pitch=0;camera.rotation.set(0,0,0);
   score=hits=shots=0;trackOn=trackTot=trackSample=0;
   sec=emptySec();ttks=[];missOver=missUnder=0;mv={x:0,y:0};
-  gameDur=S.short?30:60;timeLeft=gameDur;running=true;
+  gameDur=S.short?30:60;timeLeft=gameDur;running=true;paused=false;
   lastT=performance.now();startTime=lastT;lastKill=lastT;
   setupMode();applyBtns();
-  if(!S.touchOn){renderer.domElement.requestPointerLock?.();}
+  if(!S.touchOn){const p=renderer.domElement.requestPointerLock();if(p&&p.catch)p.catch(()=>{});}
   else if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(()=>{});
   requestAnimationFrame(loop);
 }
@@ -464,16 +565,16 @@ function accuracy(){
 }
 let lastResult=null;
 function endGame(){
-  if(!running)return;running=false;firing.clear();
-  document.exitPointerLock?.();
+  if(!running)return;running=false;paused=false;firing.clear();
+  if(document.pointerLockElement)document.exitPointerLock();
+  $('pause').style.display='none';
   $('hud').style.display='none';$('cross').style.display='none';$('pauseBtn').style.display='none';
   ['fire1','fire2'].forEach(i=>$(i).style.display='none');
-  $('gear').style.display='block';$('ver').style.display='block';
+  $('ver').style.display='block';
   const a=Math.round(accuracy()*100)/100;
   const sc=Math.round(score);
   const elapsed=Math.max(1,gameDur-Math.max(0,timeLeft));
-  const kills=S.mode==='track'?0:hits;
-  const avg=S.mode==='track'?Math.round(sc/elapsed):(kills?Math.round(sc/kills):0);
+  const avg=S.mode==='track'?Math.round(sc/elapsed):(hits?Math.round(sc/hits):0);
   const ttk=ttks.length?Math.round(ttks.reduce((x,y)=>x+y,0)/ttks.length):null;
   const prev=getHS();
   const isNew=sc>0&&(!prev.length||sc>Math.max(...prev.map(p=>p.s)));
@@ -485,7 +586,7 @@ function endGame(){
   const hr=sec.map(s=>(s.hit+s.miss)?s.hit/(s.hit+s.miss):null);
   const hist=JSON.parse(localStorage.getItem('aimHist')||'[]');
   if(sc>0){hist.push({rt,hr});localStorage.setItem('aimHist',JSON.stringify(hist.slice(-10)));}
-  lastResult={rt,hr,ttks:ttks.slice(),sec:JSON.parse(JSON.stringify(sec)),hist:hist.slice(-10)};
+  lastResult={rt,hr,ttks:ttks.slice(),hist:hist.slice(-10)};
   $('newRec').textContent=isNew?'新紀錄!':'';
   $('bigScore').textContent=sc;
   $('rAvg').textContent=avg;
@@ -500,14 +601,13 @@ function endGame(){
 }
 $('start').onclick=startGame;
 $('again').onclick=startGame;
-$('toMenu').onclick=()=>{$('end').style.display='none';$('game').style.display='none';$('menu').style.display='flex';showHS();
+$('toMenu').onclick=()=>{$('end').style.display='none';$('game').style.display='none';$('menu').style.display='block';showHS();
   if(document.fullscreenElement)document.exitFullscreen();};
-$('pauseBtn').onclick=endGame;
-addEventListener('keydown',e=>{if(e.key==='Escape'&&running&&S.touchOn)endGame();});
 
 function loop(now){
   if(!running)return;
   requestAnimationFrame(loop);
+  if(paused){lastT=now;return;}
   const dt=Math.min((now-lastT)/1000,0.05);lastT=now;
   fpsC++;fpsT+=dt;if(fpsT>=0.5){$('fps').textContent=Math.round(fpsC/fpsT)+' FPS';fpsC=0;fpsT=0;}
   timeLeft-=dt;
@@ -517,8 +617,8 @@ function loop(now){
     if(t){const u=t.userData;
       if(Math.random()<dt*0.6)u.vy*=-1;
       u.yaw+=u.vy*dt;
-      if(Math.abs(u.yaw)>35){u.vy=-Math.sign(u.yaw)*Math.abs(u.vy);u.yaw=Math.sign(u.yaw)*35;}
-      u.pitch=6*Math.sin(now/1300);
+      if(Math.abs(u.yaw)>18){u.vy=-Math.sign(u.yaw)*Math.abs(u.vy);u.yaw=Math.sign(u.yaw)*18;}
+      u.pitch=4*Math.sin(now/1300);
       t.position.copy(dirFrom(u.yaw,u.pitch,u.dist));
       if(firing.size){
         trackTot+=dt;
@@ -606,7 +706,7 @@ function drawTrend(){
   g.strokeStyle='#5b72e8';g.lineWidth=1.5;g.beginPath();d.forEach((v,i)=>i?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v)));g.stroke();
 }
 
-afterChange();showHS();
+setSensUI();afterChange();showHS();
 </script>
 </body>
 </html>
