@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>RETICLO 射擊訓練</title>
+<link rel="icon" type="image/svg+xml" href="reticlo-logo.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -22,6 +29,8 @@ header.top p{margin:4px 0 0;color:#777;font-size:13px;letter-spacing:.2em}
 .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;font-size:14px}
 .row input[type=range]{flex:1;min-width:0;max-width:190px}
 .row .v{width:50px;text-align:right}
+.row input.num{width:78px;background:#111;color:#ddd;border:1px solid #333;border-radius:6px;padding:5px 6px;text-align:right;font-size:14px;font-family:inherit}
+.row input.num:focus{outline:none;border-color:#aaa;background:#181818}
 select,button.sm{background:#111;color:#ddd;border:1px solid #333;border-radius:8px;padding:7px 10px;font-size:14px;cursor:pointer}
 button.big{background:#fff;color:#000;border:0;border-radius:30px;padding:16px;font-size:19px;font-weight:bold;box-shadow:0 0 22px #fff4;width:100%;cursor:pointer}
 .conv{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;margin-top:10px}
@@ -49,7 +58,6 @@ button.big{background:#fff;color:#000;border:0;border-radius:30px;padding:16px;f
 #pause .t{font-size:34px;margin-bottom:10px}
 #pause .h{color:#e88;font-size:13px;min-height:20px;margin-bottom:6px}
 #pause button{width:260px}
-/* 結算 */
 #end{position:fixed;inset:0;background:#000;display:none;z-index:50;overflow:auto;padding:26px 16px;gap:16px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
 #end .ecol{width:340px;max-width:100%}
 #end .mid{width:380px;text-align:center}
@@ -76,7 +84,7 @@ canvas.radar{width:100%;max-width:260px;display:block;margin:0 auto}
 </head>
 <body>
 <div id="fps">60 FPS</div>
-<div id="ver">v2.1.0</div>
+<div id="ver">v2.2.0</div>
 
 <div id="menu">
  <div class="wrap">
@@ -120,9 +128,9 @@ canvas.radar{width:100%;max-width:260px;display:block;margin:0 auto}
       <div class="card">
         <div class="row" style="margin-top:0"><span>遊戲設定檔</span>
           <select id="preset"></select></div>
-        <div class="row"><span>視野 (FOV)</span><input type="range" id="fov" min="60" max="140" step="1"><span class="v" id="fovV"></span></div>
-        <div class="row"><span>滑鼠靈敏度</span><input type="range" id="sensR"><span class="v" id="sensV"></span></div>
-        <div class="row"><span>觸控靈敏度</span><input type="range" id="tsens" min="0.2" max="4" step="0.05"><span class="v" id="tsensV"></span></div>
+        <div class="row"><span>視野 (FOV)</span><input type="range" id="fov" min="60" max="140" step="1"><input type="number" class="num" id="fovN" min="30" max="150" step="1"></div>
+        <div class="row"><span>滑鼠靈敏度</span><input type="range" id="sensR"><input type="number" class="num" id="sensN" min="0" step="any"></div>
+        <div class="row"><span>觸控靈敏度</span><input type="range" id="tsens" min="0.2" max="4" step="0.05"><input type="number" class="num" id="tsensN" min="0.05" max="10" step="0.05"></div>
         <div class="conv" id="conv"></div>
       </div>
       <button class="big" id="start">開始訓練</button>
@@ -253,29 +261,64 @@ const bind=(id,key,fmt)=>{
   el.addEventListener('input',upd);
   if(vEl)vEl.textContent=fmt?fmt(S[key]):S[key];
 };
-bind('mode','mode');bind('short','short');bind('fov','fov');
-bind('tsens','tsens',v=>(+v).toFixed(2));
+bind('mode','mode');bind('short','short');bind('fov','fov');bind('tsens','tsens');
 ['cCol','cOp','cLen','cWid','cGap','cDot','cDotS','cOut','cOutC','cOutW'].forEach(k=>bind(k,k));
 bind('touchOn','touchOn');bind('fire2On','fire2On');bind('bSize','bSize');bind('bOp','bOp');
 bind('sndOn','sndOn');bind('vol','vol');bind('showFps','showFps');
 
-// 靈敏度:內部以 Valorant 為基準(S.sens),滑桿顯示目前所選遊戲的單位
+// 靈敏度:內部以 Valorant 為基準(S.sens),輸入欄顯示目前所選遊戲的單位
+const fmtN=v=>parseFloat(v.toFixed(4));
 function setSensUI(){
   const r=PRESETS[S.game].r,el=$('sensR');
   el.min=(0.05*r).toFixed(3);el.max=(5*r).toFixed(3);el.step=(r>=5?0.01:0.001);
-  el.value=(S.sens*r).toFixed(3);
-  $('sensV').textContent=(S.sens*r).toFixed(r>=5?2:3);
+  el.value=S.sens*r;
+  $('sensN').step=el.step;
+  $('sensN').value=fmtN(S.sens*r);
 }
 $('sensR').addEventListener('input',e=>{
   const r=PRESETS[S.game].r;
   S.sens=parseFloat(e.target.value)/r;
-  $('sensV').textContent=(S.sens*r).toFixed(r>=5?2:3);
+  $('sensN').value=fmtN(S.sens*r);
   save();renderConv();
 });
+$('sensN').addEventListener('change',e=>{
+  const r=PRESETS[S.game].r;
+  let v=parseFloat(e.target.value);
+  if(!(v>0))v=S.sens*r;
+  v=Math.max(0.001,Math.min(v,1000*r));
+  S.sens=v/r;
+  e.target.value=fmtN(v);
+  $('sensR').value=v;
+  save();renderConv();
+});
+
+// 視野輸入欄
+$('fovN').value=S.fov;
+$('fov').addEventListener('input',()=>{$('fovN').value=S.fov;});
+$('fovN').addEventListener('change',e=>{
+  let v=Math.round(parseFloat(e.target.value));
+  if(!v)v=S.fov;
+  v=Math.max(30,Math.min(150,v));
+  S.fov=v;e.target.value=v;$('fov').value=v;
+  save();afterChange();
+});
+
+// 觸控靈敏度輸入欄
+$('tsensN').value=(+S.tsens).toFixed(2);
+$('tsens').addEventListener('input',()=>{$('tsensN').value=(+S.tsens).toFixed(2);});
+$('tsensN').addEventListener('change',e=>{
+  let v=parseFloat(e.target.value);
+  if(!(v>0))v=S.tsens;
+  v=Math.max(0.05,Math.min(10,v));
+  S.tsens=v;e.target.value=v.toFixed(2);$('tsens').value=v;
+  save();
+});
+document.querySelectorAll('input.num').forEach(el=>el.addEventListener('focus',()=>el.select()));
+
 $('preset').addEventListener('change',e=>{
   S.game=+e.target.value;
   const f=PRESETS[S.game].fov;
-  if(f){S.fov=f;$('fov').value=f;$('fovV').textContent=f;}
+  if(f){S.fov=f;$('fov').value=f;$('fovN').value=f;}
   setSensUI();save();afterChange();
 });
 function renderConv(){
@@ -414,7 +457,6 @@ function addTarget(yawD,pitchD,r,extra){
   scene.add(m);targets.push(m);return m;
 }
 function removeTarget(t){scene.remove(t);t.geometry.dispose();t.material.dispose();targets=targets.filter(x=>x!==t);}
-// 目標集中在準心前方的一小塊區域(類似 Gridshot),彼此至少保持 gap 度
 function spawnRandom(r,yr,pr,gap){
   for(let i=0;i<40;i++){
     const y=rnd(-yr,yr),p=rnd(-pr,pr);
@@ -422,6 +464,7 @@ function spawnRandom(r,yr,pr,gap){
   }
   return addTarget(rnd(-yr,yr),rnd(-pr,pr),r);
 }
+// 目標範圍設定:yr=左右±度數, pr=上下±度數, gap=目標間最小距離(度), r=球半徑
 const CFG={
   normal:{r:0.8,yr:14,pr:8,gap:6.5},
   precise:{r:0.4,yr:14,pr:8,gap:5},
